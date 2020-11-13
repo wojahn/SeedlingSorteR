@@ -1,10 +1,10 @@
 Package: SeedlingSorteR
 Type: Package
-Title: Makes a Neural Network to Sort Sagebrush Seedlings According to Genotype
+Title: Makes a Neural Network to Sort Sagebrush Seedlings According to Phenotype
 Version: 0.1.0
 Author: J. M. A. Wojahn et al.
 Maintainer: The package maintainer <mikewojahn@boisestate.edu>
-Description: Makes a Neural Network to Sort Sagebrush Seedlings According to Genotype
+Description: Makes a Neural Network to Sort Sagebrush Seedlings According to Phenotype
 License: GNU AGPLv3
 Encoding: UTF-8
 LazyData: true
