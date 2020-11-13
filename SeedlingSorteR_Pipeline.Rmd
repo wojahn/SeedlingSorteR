@@ -1,0 +1,95 @@
+---
+title: "How to use SeedlingSorteR"
+author: ""
+date: "11/9/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Download SeedlingSorteR
+SeedlingSorteR is available on github
+```{r eval=F}
+devtools::install_github("wojahn/G2PMineR")
+.rs.restartR()
+```
+## Set main directory (i.e. where you want your stuff to go)
+This is the directory where your picture sub-directories are.
+```{r eval=F}
+mainDirect <- "/Users/Mike/BSU_DRIVE/SeedlingSorteR_Analysis/"
+```
+
+## Perform preliminary analyses
+This shows the root-to-shoot ratios of the individuals within the two genotype populations and also by treatment groups.  The output of this is just a PDF, the actual sorting occurs within later functions.
+
+```{r eval=F}
+dataset <- as.data.frame(read.csv("Images_seedlings_RootShoot.csv"))
+tri <- as.data.frame(dataset[dataset$Subsp =="tridentata2x",])
+pdf("boxplots.pdf")
+boxplot(log(tri$Root_length/tri$Leaves_H) ~ tri$Genotype * tri$Treatment,
+            ylab = "Root-to-Shoot Ratio", xlab = "Genotypes by Treatment")
+boxplot(log(tri$Root_length/tri$Leaves_H) ~ tri$Genotype,
+            ylab = "Root-to-Shoot Ratio", xlab = "Genotypes")
+dev.off()
+```
+
+## Preprocess images in preparation for machine learning
+This step processes images and places them in the correct directories for keras and tensorflow to be able to access them.
+```{r eval=F}
+trainN <- .5
+valN <- 1
+scalewidth <- 600
+scaleheight <- 300
+SeedlingSorteR::RootShootDataPreProcessoR(mainDirect,trainN,valN,scalewidth,scaleheight)
+SeedlingSorteR::ShootDataPreProcessoR(mainDirect,trainN,valN,scalewidth,scaleheight)
+SeedlingSorteR::RootDataPreProcessoR(mainDirect,trainN,valN,scalewidth,scaleheight)
+SeedlingSorteR::AllDataRootShootDataPreProcessoR(mainDirect,trainN,valN,scalewidth,scaleheight)
+SeedlingSorteR::AllDataShootDataPreProcessoR(mainDirect,trainN,valN,scalewidth,scaleheight)
+SeedlingSorteR::AllDataRootDataPreProcessoR(mainDirect,trainN,valN,scalewidth,scaleheight)
+
+```
+
+## Make, Validate, and Train Models
+This step makes, validates, and trains the four models
+```{r eval=F}
+plotRS <- SeedlingSorteR::RootShootNeuralNetworkBuildeR(mainDirect)
+plot(plotRS)
+plotS <- SeedlingSorteR::ShootNeuralNetworkBuildeR(mainDirect)
+plotR <- SeedlingSorteR::RootNeuralNetworkBuildeR(mainDirect)
+#the following two models were produced to show that the validation rate of the models using all of the data is low
+plotADRS <- SeedlingSorteR::AllDataRootShootNeuralNetworkBuildeR(mainDirect)
+plotADS <- SeedlingSorteR::AllDataShootNeuralNetworkBuildeR(mainDirect)
+plotADR <- SeedlingSorteR::AllDataRootNeuralNetworkBuildeR(mainDirect)
+```
+
+## Use models to predict genotypes on all data
+Here we use the models we created based on the data within the first and third quantiles and apply it to all of the data to identify individuals which may have had their population incorrectly assigned.
+```{r eval=F}
+
+image_files_path <- sprintf("%sRSPredictionImages",mainDirect)
+RootShootPredictions <- SeedlingSorteR::UseRootShootModel(mainDirect,image_files_path)
+table(RootShootPredictions$Original_Is)
+image_files_path <- sprintf("%sPredictionImages",mainDirect)
+ShootPredictions <- SeedlingSorteR::UseShootModel(mainDirect,image_files_path)
+table(ShootPredictions$Original_Is)
+image_files_path <- sprintf("%sRtPredictionImages",mainDirect)
+RootPredictions <- SeedlingSorteR::UseRootModel(mainDirect,image_files_path)
+table(ShootPredictions$Original_Is)
+write.csv(RootShootPredictions,sprintf("%sRootShootPredictions.csv",mainDirect),row.names=F)
+write.csv(ShootPredictions,sprintf("%sShootPredictions.csv",mainDirect),row.names=F)
+write.csv(RootPredictions,sprintf("%sRootPredictions.csv",mainDirect),row.names=F)
+```
+
+## Make comparisons across models
+Here we use the results of the predictions to directlyu compare the models
+
+```{r eval=F}
+
+#now make comparisons across datasets
+ModelComparisons <- SeedlingSorteR::RS_S_R_ComparatoR(RootShootPredictions, ShootPredictions, RootPredictions)
+write.csv(ModelComparisons,sprintf("%sRS_S_R_Comparison.csv",mainDirect),row.names=F)
+
+```
