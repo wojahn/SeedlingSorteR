@@ -2,7 +2,7 @@
 #' @param mainDirect character vector: main directory
 #' @param image_files_path character vector: path to image(s)
 #' @export
-# Written by John M. A. Wojahn August 2020
+# Written by John M. A. Wojahn November 2020
 # This is Free and Open-Source Software (F.O.S.S.)
 # © J.M.A. Wojahn et al.
 # Provided under the GNU AGPLv3 License
@@ -64,13 +64,13 @@ UseRootModel <- function(mainDirect,image_files_path)
   colnames(predictions)[5] <- "Original"
   for(i in 1:nrow(predictions))
   {
-    if(predictions[i,1] > .5)
+    if(predictions[i,1] > .75)
     {
       predictions[i,3] <- "P1"
-    }else if(predictions[i,2] > .5){
+    }else if(predictions[i,2] > .75){
       predictions[i,3] <- "P2"
     }else{
-      predictions[i,3] <- "Indeterminate"
+      predictions[i,3] <- "INT"
     }
     if(predictions[i,3] == predictions[i,4])
     {

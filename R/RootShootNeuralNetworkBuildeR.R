@@ -1,7 +1,7 @@
 #' Makes Neural Network for Root and Shoot Images
 #' @param mainDirect character vector: main directory
 #' @export
-# Written by John M. A. Wojahn August 2020
+# Written by John M. A. Wojahn November 2020
 # This is Free and Open-Source Software (F.O.S.S.)
 # © J.M.A. Wojahn et al.
 # Provided under the GNU AGPLv3 License
